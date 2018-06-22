@@ -1,0 +1,64 @@
+set serveroutput on;
+
+exec getPassengerById(4);
+
+create or replace procedure getPassengerById(pid number)
+as
+passName varchar2(50);
+mobile varchar2(30);
+bookingIds varchar2(100):='';
+bookingCount number(3):=0;
+totalCost number(5):=0;
+Cursor PassCursor is select * from bookingDetails where passengerId = pid;
+begin
+select passengerName, mobileNo into passName, mobile from Passenger where passengerId = pid;
+for passrec in passCursor
+loop
+  bookingCount:=bookingCount+1;
+  bookingIds:=bookingIds||'; '||passrec.bookingId;
+  totalCost:=totalCost+passrec.rate;
+end loop;
+DBMS_OUTPUT.PUT_LINE('Passenger Name: '||passName);
+DBMS_OUTPUT.PUT_LINE('Mobile Number : '||Mobile);
+DBMS_OUTPUT.PUT_LINE('Booking IDs   : '||bookingIds);
+DBMS_OUTPUT.PUT_LINE('No. Of Bookings made: '||bookingCount);
+DBMS_OUTPUT.PUT_LINE('Total Cost Of Travel: '||totalCost);
+Exception
+  when NO_DATA_FOUND THEN
+  DBMS_OUTPUT.PUT_LINE('Passenger with the ID '||pid||' cannot be located');
+end;
+
+select b.Source, b.destination,p.PassengerName from BOOKINGDETAILS B, PASSENGER P
+where P.PASSENGERID = B.PASSENGERID;
+
+select * from PASSENGER;
+select * from BOOKINGDETAILS;
+
+select P.*,B.* from Passenger P, (select PASSENGERID, sum(RATE) from BOOKINGDETAILS group by (PASSENGERID)) B 
+where P.PASSENGERID = B.PASSENGERID order by P.PASSENGERID;
+
+select P.*,B.* from Passenger P, (select PASSENGERID, sum(RATE) from BOOKINGDETAILS group by (PASSENGERID)) B 
+where P.PASSENGERID = B.PASSENGERID ;
+
+select DISTINCT PASSENGERID from BookingDetails;
+
+select P.* from Passenger P, (select PASSENGERID from BOOKINGDETAILS group by PASSENGERID having count(*) > 1) B
+where P.PASSENGERID = B.PASSENGERID order by B.PASSENGERID;
+
+select sum(distance) as Total_Distance from BOOKINGDETAILS group by PASSENGERID having count(PASSENGERID) > 1;
+
+select * from PASSENGER where PASSENGERID = 
+(Select PASSENGERID from BOOKINGDETAILS where Distance = 
+(select max(DISTANCE) from BOOKINGDETAILS))
+
+alter table PASSENGER DROP column STATUS
+
+desc PASSENGER
+
+create domain pass_status char(10) constraint p_status 
+check (value in("Frequent","Non-Frequent"));
+
+alter table PASSENGER ADD STATUS varchar2(10);
+
+
+alter table PASSENGER ADD CONSTRAINT check_status CHECK(STATUS in ('FREQUENT', 'NON-FREQUENT')); 
